@@ -777,14 +777,18 @@ class Policy(object):
     userspace."""
     RETURN = "RETURN"
     """Return to calling chain."""
+    USE_CACHE = True
 
     _cache = weakref.WeakValueDictionary()
 
     def __new__(cls, name):
-        obj = Policy._cache.get(name, None)
+        obj = None
+        if Policy.USE_CACHE:
+            obj = Policy._cache.get(name, None)
         if not obj:
             obj = object.__new__(cls)
-            Policy._cache[name] = obj
+            if Policy.USE_CACHE:
+                Policy._cache[name] = obj
         return obj
 
     def __init__(self, name):
@@ -1277,13 +1281,17 @@ class Chain(object):
     additional chains.  Rule targets can specify to jump into another chain
     and continue processing its rules, or return to the caller chain.
     """
+    USE_CACHE = True
     _cache = weakref.WeakValueDictionary()
 
     def __new__(cls, table, name):
-        obj = Chain._cache.get(table.name + "." + name, None)
+        obj = None
+        if Chain.USE_CACHE:
+            obj = Chain._cache.get(table.name + "." + name, None)
         if not obj:
             obj = object.__new__(cls)
-            Chain._cache[table.name + "." + name] = obj
+            if Chain.USE_CACHE:
+                Chain._cache[table.name + "." + name] = obj
         return obj
 
     def __init__(self, table, name):
@@ -1419,19 +1427,26 @@ class Table(object):
     ALL = ["filter", "mangle", "raw", "nat"]
     """This is the constant for all tables."""
 
+    USE_CACHE = True
+
+
     _cache = dict()
 
     def __new__(cls, name, autocommit=None):
-        obj = Table._cache.get(name, None)
+        obj = None
+        if Table.USE_CACHE:
+            obj = Table._cache.get(name, None)
         if not obj:
             obj = object.__new__(cls)
             if autocommit is None:
                 autocommit = True
             obj._init(name, autocommit)
-            Table._cache[name] = obj
+            if Table.USE_CACHE:
+                Table._cache[name] = obj
         elif autocommit is not None:
             obj.autocommit = autocommit
         return obj
+
 
     def _init(self, name, autocommit):
         """

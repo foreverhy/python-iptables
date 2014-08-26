@@ -566,17 +566,21 @@ class Table6(Table):
     """This is the constant for the security table."""
     ALL = ["filter", "mangle", "raw", "security"]
     """This is the constant for all tables."""
+    USE_CACHE = True
 
     _cache = dict()
 
     def __new__(cls, name, autocommit=None):
-        obj = Table6._cache.get(name, None)
+        obj = None
+        if Table6.USE_CACHE:
+            obj = Table6._cache.get(name, None)
         if not obj:
             obj = object.__new__(cls)
             if autocommit is None:
                 autocommit = True
             obj._init(name, autocommit)
-            Table6._cache[name] = obj
+            if Table6.USE_CACHE:
+                Table6._cache[name] = obj
         elif autocommit is not None:
             obj.autocommit = autocommit
         return obj
